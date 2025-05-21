@@ -1,6 +1,6 @@
 import express from 'express';
-import authRoutes from './auth/routes/auth.routes';
-import userRoutes from './user/routes/user.routes';
+import authRoutes from './api/auth/routes/auth.routes';
+import userRoutes from './api/user/routes/user.routes';
 import { logger } from './common/middleware/logger.middleware';
 import { responseInterceptor } from './common/interceptors/response.interceptor';
 

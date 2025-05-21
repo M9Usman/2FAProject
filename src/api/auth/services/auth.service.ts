@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
-import prisma from '../../prisma/client';
+import prisma from '../../../prisma/client';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { signToken } from '../utils/jwt';
-import { Role } from '../../common/enums/roles.enum';
+import { Role } from '../../../common/enums/roles.enum';
 
 export class AuthService {
     async register(data: RegisterDto) {
