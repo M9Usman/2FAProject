@@ -1,0 +1,21 @@
+
+// ---------- prisma/schema.prisma ----------
+generator client {
+  provider = "prisma-client-js"
+  // ✅ Remove custom output path - use default
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  role     String @default("USER")
+  
+  @@map("users") // Optional: maps to "users" table in DB
+}

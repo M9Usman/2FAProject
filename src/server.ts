@@ -2,7 +2,7 @@
 // ---------- server.ts ----------
 // In server.ts
 import app from './app';
-import prisma from './prisma/client';
+import prisma from './config/database';
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {

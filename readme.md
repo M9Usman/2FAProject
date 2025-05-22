@@ -1,42 +1,45 @@
 # My File Structure will look like: 
 ```
-src/
-├── api/
-│   ├── auth/
-│   │   ├── controllers/
-│   │   │   └── auth.controller.ts
-│   │   ├── services/
-│   │   │   └── auth.service.ts
-│   │   ├── routes/
-│   │   │   └── auth.routes.ts
-│   │   ├── dto/
-│   │   │   ├── login.dto.ts
-│   │   │   └── register.dto.ts
-│   │   ├── guards/
-│   │   │   ├── auth.guard.ts
-│   │   │   └── role.guard.ts
-│   │   └── utils/
-│   │       └── jwt.ts
-│   ├── user/
-│   │   ├── controllers/
-│   │   │   └── user.controller.ts
-│   │   ├── routes/
-│   │   │   └── user.routes.ts
-├── common/
-│   ├── enums/
-│   │   └── roles.enum.ts
-│   ├── interceptors/
-│   │   └── response.interceptor.ts
-│   ├── middleware/
-│   │   └── logger.middleware.ts
-│   └── types/
-│       └── express.d.ts
+
 ├── prisma/
-│   └── client.ts
 │   └── schema.prisma
+src/
+├── models/           # Database models/entities
+├── repositories/     # Data access layer
+├── exceptions/       # Custom error classes
+├── constants/        # App-wide constants
+├── interfaces/       # TypeScript interfaces
+└── tests/           # Unit and integration tests
+├── config/
+│   ├── client.ts/ #👈 prisma
+├── controllers/
+│   ├── auth-controller.ts
+│   ├── user-controller.ts
+├── dto/
+│   ├── login-dto.ts
+│   ├── register-dto.ts
+├── middleware/
+│   ├── logger-middleware.ts
+│   ├── validate-middleware.ts
+├── routes/
+│   ├── auth-route.ts
+│   ├── user-route.ts
+├── service/
+│   ├── auth-service.ts
+├── types/
+├── utils/
+│   ├── async-handler.ts
+│   ├── jwt.ts
+├── validators/
+│   ├── login-validator.ts
+├── database/        # DB-related files
+│   ├── migrations/
+│   ├── seeders/
+│   └── factories/
 ├── app.ts
 ├── server.ts
 /.env
+/.env.example
 /.gitignore
 /package-lock.json
 /package.json
