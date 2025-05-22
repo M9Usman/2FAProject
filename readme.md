@@ -1,17 +1,17 @@
 # My File Structure will look like: 
 ```
 
-├── prisma/
-│   └── schema.prisma
+prisma/
+├──  schema.prisma
 src/
-├── models/           # Database models/entities
 ├── repositories/     # Data access layer
 ├── exceptions/       # Custom error classes
 ├── constants/        # App-wide constants
+|   ├── role.ts
 ├── interfaces/       # TypeScript interfaces
 └── tests/           # Unit and integration tests
 ├── config/
-│   ├── client.ts/ #👈 prisma
+│   ├── database.ts/ #👈 prisma client
 ├── controllers/
 │   ├── auth-controller.ts
 │   ├── user-controller.ts
@@ -32,6 +32,7 @@ src/
 │   ├── jwt.ts
 ├── validators/
 │   ├── login-validator.ts
+│   ├── register-validator.ts
 ├── database/        # DB-related files
 │   ├── migrations/
 │   ├── seeders/

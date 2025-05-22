@@ -1,12 +1,14 @@
-
 // ---------- server.ts ----------
 // In server.ts
 import app from './app';
 import prisma from './config/database';
+import { startCleanupJob } from './utils/cleanup-job';
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  // Start the cleanup job for expired OTPs
+  startCleanupJob();
 });
 
 // Graceful shutdown

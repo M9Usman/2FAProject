@@ -1,8 +1,5 @@
-
-// ---------- prisma/schema.prisma ----------
 generator client {
   provider = "prisma-client-js"
-  // ✅ Remove custom output path - use default
 }
 
 datasource db {
@@ -11,11 +8,36 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  name     String
-  password String
-  role     String @default("USER")
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  phone       String?
+  role        String   @default("USER")
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  otpCodes    OtpCode[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  code      String
+  email     String
+  type      OtpType
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
   
-  @@map("users") // Optional: maps to "users" table in DB
+  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+enum OtpType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
 }

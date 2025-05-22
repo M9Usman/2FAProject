@@ -1,9 +1,8 @@
-// ---------- src/utils/jwt.ts ----------
 import jwt from 'jsonwebtoken';
 import { Role } from '../constants/role';
 
 interface TokenPayload {
-    id: number;
+    id: string; // Changed from number to string
     role: Role;
 }
 
@@ -13,12 +12,11 @@ export const signToken = (payload: TokenPayload): string => {
         throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
-    // ✅ Simple approach - use jwt.sign with just the essential options
     return jwt.sign(
         payload,
         secret,
         {
-            expiresIn: '24h',  // Hardcoded string - no type issues
+            expiresIn: '24h',
             algorithm: 'HS256'
         }
     );
@@ -38,7 +36,6 @@ export const verifyToken = (token: string): TokenPayload => {
     }
 };
 
-// ✅ Refresh token with longer expiry
 export const signRefreshToken = (payload: TokenPayload): string => {
     const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
     if (!secret) {
@@ -49,7 +46,7 @@ export const signRefreshToken = (payload: TokenPayload): string => {
         payload,
         secret,
         {
-            expiresIn: '7d',   // Hardcoded string - no type issues
+            expiresIn: '7d',
             algorithm: 'HS256'
         }
     );
@@ -69,7 +66,6 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
     }
 };
 
-// ✅ Utility functions
 export const decodeToken = (token: string): TokenPayload | null => {
     try {
         return jwt.decode(token) as TokenPayload;
