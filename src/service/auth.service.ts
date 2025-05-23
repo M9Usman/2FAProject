@@ -3,7 +3,7 @@ import prisma from '../config/database';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { VerifyOtpDto } from '../dto/verifyOtp.dto';
-import { signToken, signRefreshToken } from '../utils/jwt';
+import { signToken, signRefreshToken } from '../utils/jwt.utils';
 import { ROLES, Role } from '../constants/role';
 import { OtpService, OtpType, OTP_TYPES } from './otp.service';
 
@@ -149,7 +149,7 @@ export class AuthService {
 
     async refreshToken(refreshToken: string) {
         try {
-            const { verifyRefreshToken, signToken } = await import('../utils/jwt');
+            const { verifyRefreshToken, signToken } = await import('../utils/jwt.utils');
             const decoded = verifyRefreshToken(refreshToken);
             
             // Verify user still exists and is verified

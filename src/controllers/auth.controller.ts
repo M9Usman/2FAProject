@@ -1,103 +1,142 @@
-import { RequestHandler } from 'express';
+// src/controllers/auth.controller.ts
+import { Request, Response, NextFunction } from 'express';
+import { ApiResponse } from '../utils/response.utils';
 import { AuthService } from '../service/auth.service';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
-import { VerifyOtpDto, ResendOtpDto } from '../dto/verifyOtp.dto';
 
 const authService = new AuthService();
 
-export const register: RequestHandler = async (req, res, next) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data: RegisterDto = req.body;
-        const result = await authService.register(data);
-        res.status(201).json(result);
-    } catch (err) {
-        if (err instanceof Error && err.message === 'User with this email already exists') {
-            res.status(409).json({ message: err.message });
+        const result = await authService.register(req.body);
+
+        // Create data object separately
+        const responseData = {
+            user: result.user
+        };
+
+        ApiResponse.created(res, responseData, result.message);
+
+    } catch (error: any) {
+        if (error.message === 'User with this email already exists') {
+            ApiResponse.error(res, error.message, 409);
             return;
         }
-        next(err);
+        next(error);
     }
 };
 
-export const verifyEmail: RequestHandler = async (req, res, next) => {
+export const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data: VerifyOtpDto = req.body;
-        const result = await authService.verifyEmail(data);
-        res.json(result);
-    } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === 'User not found') {
-                res.status(404).json({ message: err.message });
-                return;
+        const result = await authService.verifyEmail(req.body);
+
+        // Create data object separately
+        const responseData = {
+            user: result.user,
+            tokens: {
+                accessToken: result.token,
+                refreshToken: result.refreshToken
             }
-            if (err.message === 'Email is already verified') {
-                res.status(400).json({ message: err.message });
-                return;
-            }
-            if (err.message === 'Invalid or expired OTP') {
-                res.status(400).json({ message: err.message });
-                return;
-            }
+        };
+
+        ApiResponse.success(res, responseData, result.message);
+
+    } catch (error: any) {
+        if (error.message === 'User not found') {
+            ApiResponse.notFound(res, error.message);
+            return;
         }
-        next(err);
+
+        if (error.message === 'Email is already verified') {
+            ApiResponse.error(res, error.message, 400);
+            return;
+        }
+
+        if (error.message === 'Invalid or expired OTP') {
+            ApiResponse.error(res, error.message, 400);
+            return;
+        }
+
+        next(error);
     }
 };
 
-export const resendVerificationOtp: RequestHandler = async (req, res, next) => {
+export const resendVerificationOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { email }: ResendOtpDto = req.body;
+        const { email } = req.body;
         const result = await authService.resendVerificationOtp(email);
-        res.json(result);
-    } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === 'User not found') {
-                res.status(404).json({ message: err.message });
-                return;
-            }
-            if (err.message === 'Email is already verified') {
-                res.status(400).json({ message: err.message });
-                return;
-            }
-            if (err.message === 'Please wait before requesting a new OTP') {
-                res.status(429).json({ message: err.message });
-                return;
-            }
+
+        // For this endpoint, we don't need to send any data back
+        const responseData = null;
+
+        ApiResponse.success(res, responseData, result.message);
+
+    } catch (error: any) {
+        if (error.message === 'User not found') {
+            ApiResponse.notFound(res, error.message);
+            return;
         }
-        next(err);
+
+        if (error.message === 'Email is already verified') {
+            ApiResponse.error(res, error.message, 400);
+            return;
+        }
+
+        next(error);
     }
 };
 
-export const login: RequestHandler = async (req, res, next) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data: LoginDto = req.body;
-        const result = await authService.login(data);
-        res.json(result);
-    } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === 'Invalid credentials') {
-                res.status(401).json({ message: err.message });
-                return;
+        const result = await authService.login(req.body);
+
+        // Create data object separately
+        const responseData = {
+            user: result.user,
+            tokens: {
+                accessToken: result.token,
+                refreshToken: result.refreshToken
             }
-            if (err.message === 'Please verify your email before logging in') {
-                res.status(403).json({ message: err.message });
-                return;
-            }
+        };
+
+        ApiResponse.success(res, responseData, 'Login successful');
+
+    } catch (error: any) {
+        if (error.message === 'Invalid credentials') {
+            ApiResponse.unauthorized(res, error.message);
+            return;
         }
-        next(err);
+
+        if (error.message === 'Please verify your email before logging in') {
+            ApiResponse.forbidden(res, error.message);
+            return;
+        }
+
+        next(error);
     }
 };
 
-export const refreshToken: RequestHandler = async (req, res, next) => {
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { refreshToken } = req.body;
         const result = await authService.refreshToken(refreshToken);
-        res.json(result);
-    } catch (err) {
-        if (err instanceof Error && err.message === 'Invalid refresh token') {
-            res.status(401).json({ message: err.message });
+
+        // Create data object separately
+        const responseData = {
+            tokens: {
+                accessToken: result.token
+            }
+        };
+
+        ApiResponse.success(res, responseData, 'Token refreshed successfully');
+
+    } catch (error: any) {
+        if (error.message === 'Invalid refresh token' ||
+            error.message === 'User not found' ||
+            error.message === 'User email not verified') {
+            ApiResponse.unauthorized(res, 'Invalid or expired refresh token');
             return;
         }
-        next(err);
+
+        next(error);
     }
 };
