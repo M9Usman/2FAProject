@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
 import prisma from '../config/database';
-import { RegisterDto } from '../dto/register-dto';
-import { LoginDto } from '../dto/login-dto';
-import { VerifyOtpDto } from '../dto/verify-otp-dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
+import { VerifyOtpDto } from '../dto/verifyOtp.dto';
 import { signToken, signRefreshToken } from '../utils/jwt';
 import { ROLES, Role } from '../constants/role';
-import { OtpService, OtpType, OTP_TYPES } from './otp-service';
+import { OtpService, OtpType, OTP_TYPES } from './otp.service';
 
 export class AuthService {
     private otpService: OtpService;

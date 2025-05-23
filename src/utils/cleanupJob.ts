@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { OtpService } from '../service/otp-service';
+import { OtpService } from '../service/otp.service';
 
 const otpService = new OtpService();
 

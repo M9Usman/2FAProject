@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { EmailService } from './email-service';
+import { EmailService } from './email.service';
 
 // Use string union type instead of enum to match Prisma
 export type OtpType = 'EMAIL_VERIFICATION' | 'PASSWORD_RESET';

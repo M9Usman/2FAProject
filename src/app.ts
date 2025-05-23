@@ -1,12 +1,14 @@
+// src/app.ts
 import express from 'express';
-import authRoutes from './routes/auth-route';
-import userRoutes from './routes/user-route';
-import { logger } from './middleware/logger-middleware';
+import routes from './routes';
+import { logger } from './middleware/logger.middleware';
 
 const app = express();
+
 app.use(express.json());
 app.use(logger);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+
+// Mount the unified route with `/api` prefix here
+app.use('/api', routes);
 
 export default app;

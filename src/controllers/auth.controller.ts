@@ -1,8 +1,8 @@
 import { RequestHandler } from 'express';
-import { AuthService } from '../service/auth-service';
-import { RegisterDto } from '../dto/register-dto';
-import { LoginDto } from '../dto/login-dto';
-import { VerifyOtpDto, ResendOtpDto } from '../dto/verify-otp-dto';
+import { AuthService } from '../service/auth.service';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
+import { VerifyOtpDto, ResendOtpDto } from '../dto/verifyOtp.dto';
 
 const authService = new AuthService();
 

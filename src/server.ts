@@ -2,7 +2,7 @@
 // In server.ts
 import app from './app';
 import prisma from './config/database';
-import { startCleanupJob } from './utils/cleanup-job';
+import { startCleanupJob } from './utils/cleanupJob';
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
