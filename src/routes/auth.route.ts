@@ -1,10 +1,13 @@
-// src/routes/auth.route.ts 
 import { Router } from 'express';
 import { register, login, verifyEmail, resendVerificationOtp, refreshToken } from '../controllers/auth.controller';
-import { registerValidator } from '../validators/register.validator';
-import { loginValidator } from '../validators/login.validator';
-import { verifyOtpValidator, resendOtpValidator } from '../validators/otp.validator';
-import { validate } from '../middleware/validate.middleware';
+import { validateRequest } from '../middleware/validate.middleware';
+import {
+    registerValidator,
+    loginValidator,
+    verifyOtpValidator,
+    resendOtpValidator,
+    refreshTokenValidator
+} from '../validators/auth.validator';
 
 const router = Router();
 
@@ -15,11 +18,12 @@ const router = Router();
  * @Access Public
  * @body {string} email - User's email address
  * @body {string} password - User's password
- * @body {string} firstName - User's first name
- * @body {string} lastName - User's last name
+ * @body {string} name - User's full name
+ * @body {string} [phone] - User's phone number (optional)
+ * @body {string} [role] - User's role (defaults to USER)
  * @returns {Object} - User registration response with verification status
  */
-router.post('/register', registerValidator, validate, register);
+router.post('/register', validateRequest(registerValidator), register);
 
 /**
  * @description Verify user email with OTP code
@@ -29,7 +33,7 @@ router.post('/register', registerValidator, validate, register);
  * @body {string} otp - 6-digit verification code
  * @returns {Object} - Email verification confirmation
  */
-router.post('/verify-email', verifyOtpValidator, validate, verifyEmail);
+router.post('/verify-email', validateRequest(verifyOtpValidator), verifyEmail);
 
 /**
  * @description Resend email verification OTP
@@ -38,7 +42,7 @@ router.post('/verify-email', verifyOtpValidator, validate, verifyEmail);
  * @body {string} email - User's email address
  * @returns {Object} - OTP resend confirmation
  */
-router.post('/resend-verification', resendOtpValidator, validate, resendVerificationOtp);
+router.post('/resend-verification', validateRequest(resendOtpValidator), resendVerificationOtp);
 
 // Authentication
 /**
@@ -49,7 +53,7 @@ router.post('/resend-verification', resendOtpValidator, validate, resendVerifica
  * @body {string} password - User's password
  * @returns {Object} - Authentication tokens and user data
  */
-router.post('/login', loginValidator, validate, login);
+router.post('/login', validateRequest(loginValidator), login);
 
 /**
  * @description Refresh expired access token using refresh token
@@ -58,6 +62,6 @@ router.post('/login', loginValidator, validate, login);
  * @body {string} refreshToken - Valid refresh token
  * @returns {Object} - New access token and refresh token
  */
-router.post('/refresh-token', refreshToken);
+router.post('/refresh-token', validateRequest(refreshTokenValidator), refreshToken);
 
 export default router;
