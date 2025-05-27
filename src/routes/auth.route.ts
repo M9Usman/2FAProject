@@ -1,3 +1,4 @@
+// ----------src/routes/auth.route.ts----------
 import { Router } from 'express';
 import { register, login, verifyEmail, resendVerificationOtp, refreshToken } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
