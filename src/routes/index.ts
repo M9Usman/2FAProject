@@ -2,7 +2,7 @@
 import { Router } from "express";
 import AuthRoutes from "./auth.route";
 import UserRoutes from "./user.route";
-
+import MFARoutes from "./mfa.route";
 import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -15,5 +15,6 @@ router.use("/v1/auth", AuthRoutes);
 
 // Protected routes
 router.use("/v1/users", authenticate, UserRoutes);
+router.use("/v1/mfa",MFARoutes)
 
 export default router;

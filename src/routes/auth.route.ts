@@ -9,6 +9,7 @@ import {
     resendOtpValidator,
     refreshTokenValidator
 } from '../validators/auth.validator';
+import { verifyMfaLogin } from '../controllers/mfa.controller';
 
 const router = Router();
 
@@ -64,5 +65,15 @@ router.post('/login', validateRequest(loginValidator), login);
  * @returns {Object} - New access token and refresh token
  */
 router.post('/refresh-token', validateRequest(refreshTokenValidator), refreshToken);
+
+/**
+ * @description Verify MFA during login process
+ * @Route [POST] - /api/v1/auth/verify-mfa
+ * @Access Public
+ * @body {string} tempToken - Temporary token from login
+ * @body {string} mfaToken - 6-digit MFA code
+ * @returns {Object} - Full authentication tokens and user data
+ */
+router.post('/verify-mfa', verifyMfaLogin);
 
 export default router;

@@ -5,48 +5,50 @@ import { LoginDto } from '../dto/login.dto';
 import { VerifyOtpDto } from '../dto/verifyOtp.dto';
 import { signToken, signRefreshToken } from '../utils/jwt.utils';
 import { ROLES, Role } from '../constants/role';
-import { OtpService, OtpType, OTP_TYPES } from './otp.service';
-
+import { OtpService, OTP_TYPES } from './otp.service';
+import { MfaService } from './mfa.service';
 export class AuthService {
     private otpService: OtpService;
+    private mfaService: MfaService;
 
     constructor() {
         this.otpService = new OtpService();
+        this.mfaService = new MfaService();
     }
 
     async register(data: RegisterDto) {
         const { email, password, name, phone } = data;
         const role = data.role ?? ROLES.USER;
-        
+
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             throw new Error('User with this email already exists');
         }
-        
+
         const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10');
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        
+
         // Create user but not verified
         const user = await prisma.user.create({
-            data: { 
-                email, 
-                password: hashedPassword, 
+            data: {
+                email,
+                password: hashedPassword,
                 name,
                 phone: phone || null,
                 role,
-                isVerified: false 
+                isVerified: false
             },
         });
-        
+
         // Generate and send OTP
         await this.otpService.generateAndSendOtp(email, OTP_TYPES.EMAIL_VERIFICATION, name);
-        
-        return { 
+
+        return {
             message: 'Registration successful. Please check your email for verification code.',
             user: {
-                id: user.id, 
-                email: user.email, 
+                id: user.id,
+                email: user.email,
                 name: user.name,
                 phone: user.phone,
                 role: user.role,
@@ -57,7 +59,7 @@ export class AuthService {
 
     async verifyEmail(data: VerifyOtpDto) {
         const { email, otp } = data;
-        
+
         // Check if user exists
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
@@ -83,8 +85,8 @@ export class AuthService {
         // Generate tokens
         const token = signToken({ id: updatedUser.id, role: updatedUser.role as Role });
         const refreshToken = signRefreshToken({ id: updatedUser.id, role: updatedUser.role as Role });
-        
-        return { 
+
+        return {
             message: 'Email verified successfully',
             user: {
                 id: updatedUser.id,
@@ -115,8 +117,21 @@ export class AuthService {
 
     async login(data: LoginDto) {
         const { email, password } = data;
-        
-        const user = await prisma.user.findUnique({ where: { email } });
+
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+                id: true,
+                email: true,
+                password: true,
+                name: true,
+                phone: true,
+                role: true,
+                isVerified: true,
+                mfaEnabled: true // Add this line
+            }
+        });
+
         if (!user) {
             throw new Error('Invalid credentials');
         }
@@ -124,16 +139,33 @@ export class AuthService {
         if (!user.isVerified) {
             throw new Error('Please verify your email before logging in');
         }
-        
+
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
             throw new Error('Invalid credentials');
         }
-        
+
+        // Check if MFA is enabled - NEW LOGIC
+        if (user.mfaEnabled) {
+            // Generate temporary token for MFA verification
+            const tempToken = signToken({
+                id: user.id,
+                role: user.role as Role,
+                temp: true
+            }); // 10 minutes expiry
+
+            return {
+                requiresMfa: true,
+                tempToken,
+                message: 'MFA verification required'
+            };
+        }
+
+        // Regular login flow if MFA not enabled
         const token = signToken({ id: user.id, role: user.role as Role });
         const refreshToken = signRefreshToken({ id: user.id, role: user.role as Role });
-        
-        return { 
+
+        return {
             user: {
                 id: user.id,
                 email: user.email,
@@ -147,11 +179,58 @@ export class AuthService {
         };
     }
 
+    async verifyMfaLogin(tempToken: string, mfaToken: string) {
+        try {
+            const { verifyToken } = await import('../utils/jwt.utils');
+            const decoded = verifyToken(tempToken);
+
+            if (!decoded.temp) {
+                throw new Error('Invalid token type');
+            }
+
+            // Verify MFA token
+            const isValid = await this.mfaService.verifyMfaToken(decoded.id, mfaToken);
+            if (!isValid) {
+                throw new Error('Invalid MFA token');
+            }
+
+            // Get user data
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.id }
+            });
+
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Generate full access tokens
+            const token = signToken({ id: user.id, role: user.role as Role });
+            const refreshToken = signRefreshToken({ id: user.id, role: user.role as Role });
+
+            return {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    phone: user.phone,
+                    role: user.role,
+                    isVerified: user.isVerified
+                },
+                token,
+                refreshToken,
+                message: 'MFA verification successful'
+            };
+
+        } catch (error) {
+            throw new Error('Invalid or expired temporary token');
+        }
+    }
+
     async refreshToken(refreshToken: string) {
         try {
             const { verifyRefreshToken, signToken } = await import('../utils/jwt.utils');
             const decoded = verifyRefreshToken(refreshToken);
-            
+
             // Verify user still exists and is verified
             const user = await prisma.user.findUnique({ where: { id: decoded.id } });
             if (!user) {
@@ -161,7 +240,7 @@ export class AuthService {
             if (!user.isVerified) {
                 throw new Error('User email not verified');
             }
-            
+
             const newToken = signToken({ id: user.id, role: user.role as Role });
             return { token: newToken };
         } catch (error) {

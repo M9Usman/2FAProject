@@ -21,6 +21,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
             ApiResponse.error(res, error.message, 409);
             return;
         }
+        console.log('Error : ',error.message)
         next(error);
     }
 };
@@ -55,7 +56,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
             ApiResponse.error(res, error.message, 400);
             return;
         }
-
+        console.log('Error : ',error.message);
         next(error);
     }
 };
@@ -89,7 +90,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     try {
         const result = await authService.login(req.body);
 
-        // Create data object separately
+        // Check if MFA is required
+        if (result.requiresMfa) {
+            const responseData = {
+                requiresMfa: true,
+                tempToken: result.tempToken
+            };
+            ApiResponse.success(res, responseData, result.message);
+            return;
+        }
+
+        // Regular login response
         const responseData = {
             user: result.user,
             tokens: {
@@ -110,7 +121,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             ApiResponse.forbidden(res, error.message);
             return;
         }
-
+        console.log('Login Error : ',error.message);
         next(error);
     }
 };

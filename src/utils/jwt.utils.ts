@@ -4,6 +4,7 @@ import { Role } from '../constants/role';
 interface TokenPayload {
     id: string; // Changed from number to string
     role: Role;
+    temp?:boolean;
 }
 
 export const signToken = (payload: TokenPayload): string => {

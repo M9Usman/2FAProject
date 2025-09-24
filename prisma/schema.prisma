@@ -8,17 +8,20 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String
-  name        String
-  phone       String?
-  role        String   @default("USER")
-  isVerified  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String
+  name           String
+  phone          String?
+  role           String   @default("USER")
+  isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  mfaEnabled     Boolean  @default(false)
+  mfaSecret      String?
+  mfaBackupCodes String[]
 
-  otpCodes    OtpCode[]
+  otpCodes OtpCode[]
 
   @@map("users")
 }
@@ -31,8 +34,8 @@ model OtpCode {
   expiresAt DateTime
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
-  
-  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  user User @relation(fields: [email], references: [email], onDelete: Cascade)
 
   @@map("otp_codes")
 }

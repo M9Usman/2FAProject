@@ -4,12 +4,13 @@ import routes from './routes';
 import { logger } from './middleware/logger.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { specs, swaggerUi } from './config/swagger';
+import cors from 'cors'; 
 
 const app = express();
 
 app.use(express.json());
 app.use(logger);
-
+app.use(cors());
 // Swagger Documentation Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
     explorer: true,
